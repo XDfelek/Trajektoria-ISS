@@ -1,6 +1,8 @@
 package dominik.iss.trajectory.project.httpclient;
 
 public class Location {
+
+
     private double longitude;
     private double latitude;
     private double timestamp;
@@ -36,5 +38,14 @@ public class Location {
 
     public void setTimestamp(double timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @Override
+    public String toString() {
+        return "Location{" +
+                "longitude=" + longitude +
+                ", latitude=" + latitude +
+                ", timestamp=" + timestamp +
+                '}';
     }
 }

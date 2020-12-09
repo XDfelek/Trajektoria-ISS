@@ -1,6 +1,8 @@
 package dominik.iss.trajectory.project.httpclient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dominik.iss.trajectory.project.httpclient.people.IssHumans;
+import dominik.iss.trajectory.project.passtime.PasstimeResponse;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -18,7 +20,7 @@ public class IssHttpClient {
         this.objectMapper = new ObjectMapper();
     }
 
-    public Optional<IssCurrentLocation> getApitResponse (){
+    public Optional<IssCurrentLocation> getApiIssLocation(){
         String requestUrl= "http://api.open-notify.org/iss-now.json";
         HttpRequest request = HttpRequest.newBuilder()
                 .GET()
@@ -37,19 +39,42 @@ public class IssHttpClient {
         return Optional.empty();
     }
 
-    public double getSpeedOfIss(){
-        Optional <IssCurrentLocation> firstLocation = getApitResponse();
+    public Optional<PasstimeResponse> getApiIssPassTimes(Location location){
+        String requestUrl= "http://api.open-notify.org/iss-pass.json?lat=" + location.getLatitude() + "&lon=" + location.getLongitude();
+        HttpRequest request = HttpRequest.newBuilder()
+                .GET()
+                .uri(URI.create(requestUrl))
+                .build();
+
         try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e){
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            String body = response.body();
+            PasstimeResponse asObject = objectMapper.readValue(body, PasstimeResponse.class);
+
+            return Optional.ofNullable(asObject);
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        Optional <IssCurrentLocation> secondLocation = getApitResponse();
-        long period = secondLocation.get().getTimestamp()-firstLocation.get().getTimestamp();
-        double latitudeDifference = secondLocation.get().getLocation().getLatitude()-firstLocation.get().getLocation().getLatitude();
-        double longtitudeDifference = secondLocation.get().getLocation().getLongitude()-firstLocation.get().getLocation().getLongitude();
-        double distance = 111*Math.sqrt(Math.pow(latitudeDifference,2)+Math.pow(longtitudeDifference,2)) ;
-        return distance/period;
-
+        return Optional.empty();
     }
+
+    public Optional<IssHumans> getApiHumansInSpace(){
+        String requestUrl= "http://api.open-notify.org/astros.json";
+        HttpRequest request = HttpRequest.newBuilder()
+                .GET()
+                .uri(URI.create(requestUrl))
+                .build();
+
+        try {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            String body = response.body();
+            IssHumans asObject = objectMapper.readValue(body, IssHumans.class);
+
+            return Optional.ofNullable(asObject);
+        } catch (Exception e) {
+            e.getMessage();
+        }
+        return Optional.empty();
+    }
+
 }
